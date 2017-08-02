@@ -34,9 +34,45 @@ let rootReducer = combineReducers({
 
 })
 
+//persistent
+let storage = window.localStorage;
+
+// sessionStorage - each tab has its own storage - in new tabe it will not work
+// let storage = window.sessionStorage;
+
+
+function cartMiddleware(store) {
+
+    return function(next) {
+        return function(action) {
+            console.log(" cartMiddleware", action);
+            // forward action to next middleware
+            // forward to reducer
+            var result = next(action)
+            //reducer excuted
+            let state = store.getState();
+            if(action.type.indexOf("CART") >= 0){
+                storage.setItem("carts", JSON.stringify(state.cartState))
+            }
+            return result;
+        }
+    }
+}
+
+let cartItems = [];
+
+if(storage.carts){
+    var data = storage.getItem("carts");
+    cartItems = JSON.parse(data);
+}
+
+
 //store shall maintain state/value returned by reducers
 let store = createStore(rootReducer, 
-                      applyMiddleware(thunk))
+                        {
+                            cartState: cartItems
+                        },
+                      applyMiddleware(thunk, cartMiddleware))
 
 
 store.subscribe( ()=> {

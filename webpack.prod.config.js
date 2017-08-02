@@ -5,6 +5,8 @@ var APP_DIR = path.resolve(__dirname, 'src');
 
 var BUILD_DIR = path.resolve(__dirname, 'dist');
 
+var CopyWebpackPlugin = require('copy-webpack-plugin');
+
 var config = {
   
   entry: {
@@ -13,7 +15,9 @@ var config = {
 
 
   output: {
-    publicPath: '/'
+    publicPath: '/',
+    filename: "bundle.js",
+    path: BUILD_DIR
   },
     
   module : {
@@ -41,7 +45,7 @@ var config = {
   },
 
   plugins: [
-      new webpack.optimize.CommonsChunkPlugin({
+    new webpack.optimize.CommonsChunkPlugin({
         name: 'vendor',
         filename: 'vendor.bundle.js',
         minChunks:  function(module, count) {
@@ -49,6 +53,28 @@ var config = {
             return context && context.indexOf('node_modules') >= 0;
         },
     }),
+
+    new webpack.optimize.UglifyJsPlugin({
+        compress: {
+          screw_ie8: true, // jscs:ignore requireCamelCaseOrUpperCaseIdentifiers
+          warnings: false,
+        },
+        sourceMap: true
+    }),
+
+    new CopyWebpackPlugin(
+      [
+        {
+          from: APP_DIR + '/assets',
+          to: 'assets'
+        },
+        {
+          from: APP_DIR + '/index.html',
+          to: 'index.html'
+        }
+      ]
+    )
+
   ]
 
 };
